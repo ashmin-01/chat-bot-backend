@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('feedbacks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('prompt_id')->constrained('prompts');
+            $table->foreignId('response_id')->constrained('responses');
             $table->enum('feedback_type', ['dislike' , 'regenerate']);
             $table->text('context');
             $table->enum('regenerate_review' , ['Better' , 'Worse' , 'Same']);
