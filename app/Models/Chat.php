@@ -21,7 +21,7 @@ class Chat extends Model
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function responses(){
-        return $this->hasMany(Response::class);
+        return $this->hasMany(Response::class)->latest();
     }
 
     /**
@@ -30,7 +30,7 @@ class Chat extends Model
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function prompts(){
-        return $this->hasMany(Prompt::class);
+        return $this->hasMany(Prompt::class)->latest();
     }
 
       /**

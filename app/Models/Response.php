@@ -12,7 +12,7 @@ class Response extends Model
     use HasFactory;
 
     protected $fillable = [
-        'chat_id' , 'response_id', 'response_content' , 'response_status'
+        'chat_id' , 'prompt_id', 'response_content' , 'response_status'
     ]; 
 
      /**

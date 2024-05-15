@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('responses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('chat_id')->constrianed('chats')->cascadeOnDelete();
-            $table->foreignId('response_id')->constrianed('responses');
+            $table->foreignId('prompt_id')->constrianed('prompts');
             $table->text('response_content');
             $table->enum('response_status', ['Like', 'Dislike'])->nullable();
             $table->timestamps();
