@@ -13,7 +13,7 @@ class Chat extends Model
 
     protected $fillable = [
         'user_id' , 'chat_title' , 'isPinned'
-    ]; 
+    ];
 
     /**
      * Get the chat's responses.
