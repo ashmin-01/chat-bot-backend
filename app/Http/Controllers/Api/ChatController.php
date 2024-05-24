@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Chat;
+use App\Models\Prompt;
+use App\Models\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class ChatController
 {
     /**
      * Display a listing of the resource.
      */
-    public function index() // get 
+    public function index() // get
     {
-        $chats = Chat::with(['user', 'prompts', 'responses'])->get(); // eager loading method 
+        $user = Auth::user();
+        $chats = $user->chats()->latest()->get();
         return response()->json($chats);
     }
 
@@ -20,13 +27,23 @@ class ChatController
      */
     public function store(Request $request) // post
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
+        $user_id = Auth::user()->id;
+        $Validator = Validator::make($request->all(), [
             'chat_title' => 'required|string',
-            'isPinned' => 'boolean'
+            'isPinned' => 'boolean',
         ]);
 
-        $chat = Chat::create($request->all());
+        if($Validator->fails()){
+            return response('Something Went Wrong!',400);
+        }
+
+
+        $chat=Chat::create([
+            'user_id'=>$user_id,
+            'chat_title'=>$request['chat_title'],
+            'isPinned'=>$request['isPinned'],
+        ]);
+
         return response()->json([
             'status' => 1,
             'message' => 'Chat Created Successfully',
@@ -37,47 +54,68 @@ class ChatController
     /**
      * Display the specified resource.
      */
-    public function show(Chat $chat)
+    public function show($id)
     {
-        return response()->json($chat);
+        $user_id = Auth::user()->id;
+        if($id != $user_id){
+            return response("unauthorized");
+        }
+        else{
+
+            $chat=DB::table('chats')
+            ->join('prompts','prompts.chat_id','=','chats.id')
+            ->join('responses','responses.prompt_id','=','prompts.id')
+            ->select("prompts.prompt_content" ,"responses.response_content")
+            ->where('chats.id',$id)
+            ->first();
+            return response()->json($chat);
+        }
+
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Chat $chat)
+    public function update(Request $request , $id)
     {
-        $request->validate([
-            'chat_title' => 'sometimes|required|string',
-            'isPinned' => 'sometimes|required|boolean', 
-            'promprt_content' => 'sometimes|required|string',
-            'response_content' => 'sometimes|required|string'
+
+        $Validator = Validator::make($request->all(), [
+            'chat_title' => 'required|string',
         ]);
 
-        $chat->update($request->only(['chat_title', 'isPinned']));
-
-        if ($request->has('prompt_content')) {
-            $prompt = new Prompt([
-                'content' => $request->input('prompt_content'),
-            ]);
-            $chat->prompts()->save($prompt);
+        if($Validator->fails()){
+            return response('Something Went Wrong!',400);
         }
 
-        if($request->has('response_content')){
-            $response = new Response([
-                'content' => $request->input('response_content'),
-            ]);
-            $chat->responses()->save($response);
-        }
+        $chat = Chat::find($id);
 
-        return response()->json($chat->load(['prompts', 'responses']));
+        $chat->update($request->all());
+        $chat->save();
+
+        return response()->json("Title updated");
+    }
+
+    public function pinning($id)
+    {
+        $chat = Chat::find($id);
+
+        $chat->isPinned = !$chat->isPinned;
+
+        $chat->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Chat pinning status updated',
+            'data' => $chat,
+        ], 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Chat $chat)
+    public function destroy($id)
     {
+        $chat = Chat::find($id);
         $chat->delete();
         return response()->json(['message' => 'Chat Deleted Successfully']);
     }

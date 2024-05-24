@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Response;
 use Illuminate\Http\Request;
 
 class ResponseController
@@ -11,7 +12,7 @@ class ResponseController
      */
     public function index()
     {
-        $responses = Response::with(['chat', 'prompt', 'feedback'])->get(); // eager loading method 
+        $responses = Response::with(['chat', 'prompt', 'feedback'])->get(); // eager loading method
         return response()->json($responses);
     }
 
@@ -26,7 +27,7 @@ class ResponseController
             'response_content' => 'required|string|max:10000',
             'response_status' => 'sometimes'
 
-            
+
         ]);
 
         $response = Response::create($request->all());
@@ -53,7 +54,7 @@ class ResponseController
             'response_content' => 'required|string|max:10000'
         ]);
 
-        // Logic to regenerate the response content: this will involve integrating with the chat model to generate the resposne 
+        // Logic to regenerate the response content: this will involve integrating with the chat model to generate the resposne
         // temp
         $response->update([
             'response_content' => $request->input('response_content')

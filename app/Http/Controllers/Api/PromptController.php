@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Prompt;
 use Illuminate\Http\Request;
 
 class PromptController
@@ -11,7 +12,7 @@ class PromptController
      */
     public function index()
     {
-        $prompts = Prompt::with(['chat', 'responses'])->get(); // eager loading method 
+        $prompts = Prompt::with(['chat', 'responses'])->get(); // eager loading method
         return response()->json($prompts);
     }
 
@@ -23,7 +24,7 @@ class PromptController
         $request->validate([
             'chat_id' => 'required|exists:chats,id',
             'prompt_content' => 'required|string|max:10000'
-            
+
         ]);
 
         $prompt = Prompt::create($request->all());
@@ -53,7 +54,7 @@ class PromptController
         // Archive the current prompt
         $prompt->update(['archied' => true]);
 
-        // Create a new prompt 
+        // Create a new prompt
         $newPrompt = Prompt::create([
             'chat_id' => $prompt->chat_id,
             'content' => $request->prompt_content,
