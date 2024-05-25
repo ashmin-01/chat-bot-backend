@@ -15,7 +15,7 @@ class AuthController extends Controller
       /**
      * Display a listing of the resource.
      */
-    public function Register(Request $request){
+    public function register(Request $request){
         $data=$request->all();
         $validator= Validator::make($data,[
             'name' => 'required|string',
@@ -23,7 +23,7 @@ class AuthController extends Controller
             'mobile_number'=>'string|required'
         ]);
         if($validator->fails()){
-            return response()->json('Something went wrong!try again',400);
+            return response()->json('Something went wrong! try again',400);
         }
        $user = Auth::user();
 
@@ -39,7 +39,10 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token
         ];
-        return response()->json($user_token,201);
+        return response()->json(
+            ['data' => $user_token,
+            'message' => 'User Registered Successfully!'],
+            201);
     }
 
     public function login(Request $request){
@@ -61,7 +64,8 @@ class AuthController extends Controller
 
         $response = [
             'user' => $user,
-            'token' => $token
+            'token' => $token,
+            'message' => 'User Logged in Successfully!'
         ];
 
         return response($response , 201);

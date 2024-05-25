@@ -59,7 +59,7 @@ class ChatController
     {
         $user_id = Auth::user()->id;
         if($id != $user_id){
-            return response("unauthorized");
+            return response("Unauthorized");
         }
         else{
 
@@ -93,7 +93,7 @@ class ChatController
         $chat->update($request->all());
         $chat->save();
 
-        return response()->json("Title updated");
+        return response()->json("Title Updated");
     }
 
     public function pinning($id)
@@ -106,7 +106,7 @@ class ChatController
 
         return response()->json([
             'success' => true,
-            'message' => 'Chat pinning status updated',
+            'message' => 'Chat Pinning Status Updated',
             'data' => $chat,
         ], 200);
     }

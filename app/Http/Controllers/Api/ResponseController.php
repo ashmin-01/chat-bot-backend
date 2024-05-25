@@ -10,7 +10,7 @@ class ResponseController
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index() // problem
     {
         $responses = Response::with(['chat', 'prompt', 'feedback'])->get(); // eager loading method
         return response()->json($responses);
@@ -66,5 +66,32 @@ class ResponseController
             'data' => $response
         ]);
     }
+
+    /**
+ * Like or dislike a response.
+ */
+public function toggleLikeDislike(Request $request, Response $response)
+{
+    $request->validate([
+        'action' => 'required|in:Like,Dislike'
+    ]);
+
+    $action = $request->input('action');
+
+    if ($action === 'Like') {
+        $response->update(['response_status' => 'Like']);
+        $message = 'Response Liked Successfully';
+    } elseif ($action === 'Dislike') {
+        $response->update(['response_status' => 'Dislike']);
+        $message = 'Response Disliked Successfully';
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'message' => $message,
+        'data' => $response
+    ]);
+}
+
 
 }
