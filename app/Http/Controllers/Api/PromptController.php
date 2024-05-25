@@ -50,22 +50,22 @@ class PromptController
         $request->validate([
             'prompt_content' => 'sometimes|required|string|max:10000'
         ]);
-
+    
         // Archive the current prompt
-        $prompt->update(['archied' => true]);
-
+        $prompt->update(['archived' => true]);
+    
         // Create a new prompt
         $newPrompt = Prompt::create([
             'chat_id' => $prompt->chat_id,
-            'content' => $request->prompt_content,
+            'prompt_content' => $request->prompt_content,
             'archived' => false
         ]);
-
+    
         return response()->json([
             'status' => 1,
             'message' => 'New Prompt Created and Old Prompt Archived',
             'data' => $newPrompt
         ], 201);
-
     }
+    
 }
