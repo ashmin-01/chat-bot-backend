@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('chat_title');
-            $table->boolean('isPinned');
+            $table->boolean('isPinned')->default(false);
             $table->timestamps();
         });
     }

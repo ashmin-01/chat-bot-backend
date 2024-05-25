@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\PromptCreated;
+use App\Models\Chat;
 use App\Models\Prompt;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class PromptController
 {
@@ -19,18 +23,35 @@ class PromptController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, $chat_id)
     {
-        $request->validate([
-            'chat_id' => 'required|exists:chats,id',
-            'prompt_content' => 'required|string|max:10000'
+        $user_id = Auth::user()->id;
+        $chat = Chat::find($chat_id);
 
+        if ($chat->user_id != $user_id) {
+            return response('Unathorized',400);
+        }
+        $Validator = Validator::make($request->all(), [
+            'prompt_content' => 'required|string',
+            'archived' => 'boolean',
         ]);
 
-        $prompt = Prompt::create($request->all());
+        if($Validator->fails()){
+            return response('Something Went Wrong!',400);
+        }
+
+
+        $prompt=Prompt::create([
+            'chat_id'=>$chat_id,
+            'prompt_content'=>$request['prompt_content'],
+            'archived'=>$request['archived'],
+        ]);
+
+        broadcast(new PromptCreated($prompt));
+
         return response()->json([
             'status' => 1,
-            'message' => 'Prompt Created Successfully',
+            'message' => 'prompt Created Successfully',
             'data' => $prompt
         ], 201);
     }

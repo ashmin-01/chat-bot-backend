@@ -25,6 +25,7 @@ class ChatController
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request) // post
     {
         $user_id = Auth::user()->id;

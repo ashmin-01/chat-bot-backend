@@ -33,7 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Prompt Routes
     Route::prefix('prompts')->group(function () {
         //Route::get('/', [PromptController::class, 'index']);
-        Route::post('/Ask_question', [PromptController::class, 'store']);
+        Route::post('/Ask_question/{chat_id}', [PromptController::class, 'store']);
         //Route::get('/{prompt}', [PromptController::class, 'show']);
         Route::put('/{prompt}', [PromptController::class, 'update']);
     });
