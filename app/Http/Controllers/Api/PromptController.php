@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Chat;
 use App\Models\Prompt;
 use Illuminate\Http\Request;
+use App\Events\PromptCreated;
+use Illuminate\Support\Facades\Auth;
 
 class PromptController
 {
@@ -22,17 +25,36 @@ class PromptController
     public function store(Request $request)
     {
         $request->validate([
-            'chat_id' => 'required|exists:chats,id',
+            'chat_id' => 'nullable|integer',
             'prompt_content' => 'required|string|max:10000'
 
         ]);
 
+        $chat = Chat::find($request->chat_id);
+        $user_id = Auth::user()->id;
+
+        if (!$chat) {
+            $chat = Chat::create([
+                'user_id'=>$user_id,
+                'chat_title'=>'new chat',
+                'isPinned'=>0,
+            ]);
+        }
+
         $prompt = Prompt::create($request->all());
+
+        $this->SendPrompt($prompt);
+
         return response()->json([
             'status' => 1,
             'message' => 'Prompt Created Successfully',
             'data' => $prompt
         ], 201);
+    }
+
+    private function SendPrompt(Prompt $prompt){
+        $chat_id = $prompt->chat_id;
+        broadcast(new PromptCreated($prompt));
     }
 
     /**

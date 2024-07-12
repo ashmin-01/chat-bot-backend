@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use Illuminate\Support\Facades\Log;
+use App\Models\Prompt;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -11,22 +11,16 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-
-//-------for debugging
-
-class BasicEvent
+class PromptCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
-    public $message;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($message)
+    public function __construct(private Prompt $prompt)
     {
-        $this->message = $message;
-        Log::info('BasicEvent constructed with message: ' . $message);
+        //
     }
 
     /**
@@ -34,12 +28,21 @@ class BasicEvent
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn(): array
+    public function broadcastOn()
     {
-        Log::info('Broadcasting BasicEvent on private channel: channel-name');
+        return new PrivateChannel('Chat.' . $this->prompt->chat_id);
+    }
 
+    public function broadcastAs()
+    {
+        return 'prompt.sent';
+    }
+
+    public function broadcastWith()
+    {
         return [
-            new PrivateChannel('channel-name'),
+            'chat_id' => $this->prompt->chat_id ,
+            'prompt' => $this->prompt->toArray(),
         ];
     }
 }

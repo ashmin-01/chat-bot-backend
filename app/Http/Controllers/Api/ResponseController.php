@@ -33,7 +33,7 @@ class ResponseController
 
         $response = Response::create($request->all());
 
-        broadcast(new ResponseCreated($response));
+        $this->SendResponse($response);
 
         //dd(broadcast(new ResponseCreated($response)));
 
@@ -43,6 +43,11 @@ class ResponseController
             'data' => $response
         ], 201);
 
+    }
+
+    private function SendResponse(Response $response){
+        $chat_id = $response->chat_id;
+        broadcast(new ResponseCreated($response));
     }
 
     /**

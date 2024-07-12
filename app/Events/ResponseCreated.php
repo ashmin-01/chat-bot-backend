@@ -17,17 +17,20 @@ class ResponseCreated implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
 
+    /*
     public $response;
     public $userId;
+    */
+
     /**
      * Create a new event instance.
+     *
+     * @param Response $response
      */
 
-    public function __construct(Response $response)
+    public function __construct(private Response $response)
     {
-        $this->response = $response;
 
-        $this->userId = $response->chat->user_id;
     }
 
     /**
@@ -37,13 +40,19 @@ class ResponseCreated implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('SendResponse.' . $this->userId);
+        return new PrivateChannel('Chat.' . $this->response->chat_id);
+    }
+
+    public function broadcastAs()
+    {
+        return 'response.sent';
     }
 
     public function broadcastWith()
     {
         return [
-            'response' => $this->response,
+            'chat_id' => $this->response->chat_id ,
+            'response' => $this->response->toArray(),
         ];
     }
 }
