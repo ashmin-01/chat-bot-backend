@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+langchain
+langchain_community==0.0.36
+langchain_chroma
+langchain-core
+bs4
+langchain-groq
+python-dotenv

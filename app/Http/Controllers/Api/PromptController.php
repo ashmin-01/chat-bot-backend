@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Chat;
 use App\Models\Prompt;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use App\Events\PromptCreated;
 use Illuminate\Support\Facades\Auth;
@@ -43,12 +44,15 @@ class PromptController
 
         $prompt = Prompt::create($request->all());
 
+        $response = $this->sendPromptToLangChain($prompt->prompt_content);
+
         $this->SendPrompt($prompt);
 
         return response()->json([
             'status' => 1,
             'message' => 'Prompt Created Successfully',
-            'data' => $prompt
+            'data' => $prompt,
+            'response' => $response
         ], 201);
     }
 
@@ -90,6 +94,25 @@ class PromptController
             'message' => 'New Prompt Created and Old Prompt Archived',
             'data' => $newPrompt
         ], 201);
+    }
+
+    private function sendPromptToLangChain($promptContent)
+    {
+        $client = new Client();
+        $apiUrl = 'http://localhost:8000/query'; // Ensure this matches your FastAPI endpoint
+
+        try {
+            $response = $client->post($apiUrl, [
+                'json' => [
+                    'question' => $promptContent,
+                ]
+            ]);
+
+            $responseBody = json_decode($response->getBody(), true);
+            return $responseBody['response'] ?? 'No response from LangChain API';
+        } catch (\Exception $e) {
+            return 'Error: ' . $e->getMessage();
+        }
     }
 
 }
