@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
+#from langchain.vectorstores import Chroma
 from langchain_community.document_loaders import BSHTMLLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
@@ -26,7 +27,11 @@ embedder = HuggingFaceInferenceAPIEmbeddings(
     api_key=hugging_api_key, model_name="Griffin88/sentence-embedding-LaBSE"
 )
 
-vectorstore = Chroma.from_documents(documents=splits, embedding=embedder)
+persist_directory = 'vector db'
+
+vectorstore = Chroma.from_documents(documents=splits, embedding=embedder,persist_directory=persist_directory)
+
+vectorstore = Chroma(persist_directory=persist_directory, embedding_function=embedder)
 
 class RAGPipeline:
     def __init__(self, vectorstore, api_key, model_name="gemma2-9b-it", k=6):
