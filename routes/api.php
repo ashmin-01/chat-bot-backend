@@ -37,6 +37,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/pin/{id}', [ChatController::class, 'pinning']);
         Route::delete('/delete/{chat}', [ChatController::class, 'destroy']);
         Route::get('/search', [ChatController::class, 'search']);
+        // new : voice message
+        Route::post('/upload-voice-message', [ChatController::class, 'uploadVoiceMessage']);
+        // Route::post('/upload-voice-message', [ChatController::class, 'uploadVoiceMessage_with_transctipt']);
+
+
     });
 
     // Prompt Routes
@@ -44,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{chat_id}', [PromptController::class, 'index']);
         Route::post('/Ask_question', [PromptController::class, 'store']);
         Route::get('/{prompt}', [PromptController::class, 'show']);
-        Route::put('/{prompt_id}', [PromptController::class, 'update']);
+        Route::put('/{prompt_id}', [PromptController::class, 'upxdate']);
     });
 
     // Response Routes
