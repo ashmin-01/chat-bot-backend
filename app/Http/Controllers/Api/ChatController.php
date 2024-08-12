@@ -18,8 +18,27 @@ class ChatController
     public function index() // get
     {
         $user = Auth::user();
-        $chats = $user->chats()->latest()->get();
-        return response()->json($chats);
+
+        $chats = $user->chats()
+                ->with(['responses' => function ($query) {
+                    $query->latest()->first();
+                }])
+                ->latest()
+                ->get();
+
+        // Map the chats to include only the latest response
+        $chatsWithLastResponse = $chats->map(function ($chat) {
+        // Fetch the latest response for the chat
+        $lastResponse = $chat->responses->first();
+
+        // Return chat with the last response
+        return [
+            'chat' => $chat,
+            'last_response' => $lastResponse,
+        ];
+    });
+
+    return response()->json($chatsWithLastResponse);
     }
 
     /**

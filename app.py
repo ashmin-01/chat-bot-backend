@@ -120,7 +120,7 @@ async def startup_event():
 
         # Initialize embeddings and vector store based on configuration
         embedder = HuggingFaceInferenceAPIEmbeddings(api_key=config['api_key'], model_name=config['embedding_model_name'])
-        persist_directory = 'vector_db'
+        persist_directory = 'vector db'
         vectorstore = Chroma(persist_directory=persist_directory, embedding_function=embedder)
 
         # Initialize RAG pipeline
@@ -144,7 +144,13 @@ class QueryRequest(BaseModel):
 @app.post("/query")
 async def query_endpoint(request: QueryRequest):
     try:
+
+        print(f"Received question: {request.question}")
+
         response = query(request.question)
+
+        print(f"Generated response: {response}")
+
         return {"response": response}
     except Exception as e:
         return {"error": str(e)}

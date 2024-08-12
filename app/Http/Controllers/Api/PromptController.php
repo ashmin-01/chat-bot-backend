@@ -14,9 +14,11 @@ class PromptController
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($chat_id)
     {
-        $prompts = Prompt::with(['chat', 'responses'])->get(); // eager loading method
+        $prompts = Prompt::where('chat_id' , $chat_id)
+        ->with('responses')
+        ->get(); // eager loading method
         return response()->json($prompts);
     }
 

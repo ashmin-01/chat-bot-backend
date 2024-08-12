@@ -66,7 +66,7 @@ async def configure(
     try:
         # Initialize embeddings and vector store
         embedder = HuggingFaceInferenceAPIEmbeddings(api_key=api_key, model_name=embedding_model_name)
-        persist_directory = 'vector_db'
+        persist_directory = 'vector db'
         vectorstore = Chroma(persist_directory=persist_directory, embedding_function=embedder)
 
         # Initialize text splitter

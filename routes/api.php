@@ -41,7 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Prompt Routes
     Route::prefix('prompts')->group(function () { //done
-        Route::get('/', [PromptController::class, 'index']);
+        Route::get('/{chat_id}', [PromptController::class, 'index']);
         Route::post('/Ask_question', [PromptController::class, 'store']);
         Route::get('/{prompt}', [PromptController::class, 'show']);
         Route::put('/{prompt_id}', [PromptController::class, 'update']);
