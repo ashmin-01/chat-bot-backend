@@ -39,7 +39,7 @@
 							"urlencoded": [
 								{
 									"key": "name",
-									"value": "khaled",
+									"value": "rima",
 									"type": "text"
 								},
 								{
@@ -54,7 +54,7 @@
 								},
 								{
 									"key": "mobile_number",
-									"value": "09",
+									"value": "0999",
 									"type": "text"
 								}
 							]
@@ -88,7 +88,7 @@
 							"urlencoded": [
 								{
 									"key": "mobile_number",
-									"value": "0999",
+									"value": "09",
 									"type": "text"
 								},
 								{
@@ -186,7 +186,7 @@
 							"urlencoded": [
 								{
 									"key": "chat_title",
-									"value": "movies",
+									"value": "reham8",
 									"type": "text"
 								},
 								{
@@ -315,14 +315,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/chats/delete/1",
+							"raw": "{{baseUrl}}/chats/delete/4",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"chats",
 								"delete",
-								"1"
+								"4"
 							]
 						},
 						"description": "Deletes a collection."
@@ -430,14 +430,14 @@
 							]
 						},
 						"url": {
-							"raw": "{{baseUrl}}/chats/pin/1",
+							"raw": "{{baseUrl}}/chats/pin/8",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"chats",
 								"pin",
-								"1"
+								"8"
 							]
 						},
 						"description": "Updates a collection using the [Postman Collection v2 schema format](https://schema.postman.com/json/collection/v2.1.0/docs/index.html). Include a `collection` object in the request body that contains the following required properties:\n\n- `info` — An **object** that contains the following properties:\n    - `name` — A **string** value that contains the collection's name.\n    - `schema` — A **string** that contains a URL to the collection's schema. For example, the `https://schema.getpostman.com/collection/v1` URL.\n- `item` — An **object** that contains the HTTP request and response information.\n    - `request` — An **object** that contains the collection's request information. For a complete list of values, refer to the `definitions.request` entry in the [collection.json schema file](https://schema.postman.com/json/collection/v2.1.0/collection.json). If you pass an empty object for this value, the system defaults to an untitled GET request.\n\n**Note:**\n\n- For a complete list of available property values for this endpoint, use the following references available in the [collection.json schema file](https://schema.postman.com/json/collection/v2.1.0/collection.json):\n    - `info` object — Use the `definitions.info` entry.\n    - `item` object — Use the `definitions.items` entry.\n- For all other possible values, refer to the [collection.json schema file](https://schema.postman.com/json/collection/v2.1.0/collection.json).\n    \n\n### Important\n\nUse caution when using this endpoint. The system will replace the existing collection with the values passed in the request body."
@@ -503,12 +503,25 @@
 					"name": "Search All Chats",
 					"request": {
 						"auth": {
-							"type": "bearer"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/chats/search?q",
+							"raw": "{{baseUrl}}/chats/search?q=hello",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -519,7 +532,7 @@
 							"query": [
 								{
 									"key": "q",
-									"value": null
+									"value": "hello"
 								}
 							]
 						}
@@ -565,87 +578,6 @@
 			"name": "Prompts",
 			"item": [
 				{
-					"name": "Create a Prompt",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "chat_id",
-									"value": "2",
-									"type": "text"
-								},
-								{
-									"key": "prompt_content",
-									"value": "Are you not entertained ?",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{baseUrl}}/prompts/Ask_question",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"prompts",
-								"Ask_question"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get a Prompt",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{baseUrl}}/prompts/1",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"prompts",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Edit a Prompt",
 					"request": {
 						"auth": {
@@ -688,38 +620,6 @@
 							"path": [
 								"prompts",
 								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Prompts",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{baseUrl}}/prompts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"prompts"
 							]
 						}
 					},
@@ -938,10 +838,10 @@
 			]
 		},
 		{
-			"name": "Feedbacks",
+			"name": "Feedback",
 			"item": [
 				{
-					"name": "Send A Feedback",
+					"name": "Send A Feedback regenerate",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -993,6 +893,240 @@
 					"response": []
 				},
 				{
+					"name": "Send A Feedback dislike",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "response_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "feedback_type",
+									"value": "dislike",
+									"type": "text"
+								},
+								{
+									"key": "context",
+									"value": "not what I wanted",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/feedbacks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"feedbacks"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "start screen",
+			"item": [
+				{
+					"name": "Create a Prompt",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "chat_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "prompt_content",
+									"value": "why are we here؟",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/prompts/Ask_question",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"prompts",
+								"Ask_question"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send a Voice Message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file ",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "chat_id ",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chats/upload-voice-message",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chats",
+								"upload-voice-message"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Conversation",
+			"item": [
+				{
+					"name": "Get Chat History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/prompts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"prompts"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Not Sure",
+			"item": [
+				{
+					"name": "Get a Prompt",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/prompts/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"prompts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
 					"name": "Get All Feedbacks",
 					"request": {
 						"auth": {
@@ -1028,7 +1162,7 @@
 			]
 		},
 		{
-			"name": "New Request",
+			"name": "Querying the Model",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -1040,7 +1174,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"question\": \"شو هو تطبيق أقرب إليك؟\"\r\n}",
+					"raw": "{\r\n  \"question\": \"كيف يمكنني تغيير خطي؟\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1065,7 +1199,7 @@
 			"response": []
 		},
 		{
-			"name": "upload file",
+			"name": "Uploading to Dashboard",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -1081,7 +1215,7 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": "/C:/xampp/htdocs/chat-bot-backend/AkrabElikApp.html"
+							"src": "/D:/welcome/welcome/lectures/2022-2023/السنة الثانية/خوارزميات 2/نظري/Theoretical-AlgorithmsAndDataStructure2-Lec-1.pdf"
 						},
 						{
 							"key": "embedding_model_name",
@@ -1116,7 +1250,7 @@
 					]
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8002/configure",
+					"raw": "http://127.0.0.1:8008/configure",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -1124,7 +1258,7 @@
 						"0",
 						"1"
 					],
-					"port": "8002",
+					"port": "8008",
 					"path": [
 						"configure"
 					]
@@ -1133,7 +1267,7 @@
 			"response": []
 		},
 		{
-			"name": "configurations",
+			"name": "Configurations",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -1194,14 +1328,137 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:8002/configuration",
+					"raw": "http://localhost:8008/configuration",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
-					"port": "8002",
+					"port": "8008",
 					"path": [
 						"configuration"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "reham",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "message",
+							"value": "hello",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/chat",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"chat"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "testing streaming from python",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"message\": \"test\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:9000/chat/response",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "9000",
+					"path": [
+						"chat",
+						"response"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Auth Signature",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"socket_id\": \"46485.1391042\",\r\n    \"chat_id\": \"1\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8001/api/broadcasting/auth",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8001",
+					"path": [
+						"api",
+						"broadcasting",
+						"auth"
 					]
 				}
 			},

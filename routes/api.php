@@ -10,19 +10,40 @@ use App\Events\ResponseCreated;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\PromptController;
-use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\FeedbackController;
+use App\Http\Controllers\Api\ResponseController;
+
+
+$chatbotUrl = env('CHATBOT_API_URL');
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+/*
 Route::get('/broadcast-basic-event', function () {
     $basicEvent = new BasicEvent('Hello, world!');
     event($basicEvent);
     //broadcast(new ResponseCreated('Hello, world!'));
     return 'Basic event broadcasted!';
+});
+*/
+
+Route::post('/broadcasting/auth', function (Request $request) {
+    $authKey = config('broadcasting.connections.pusher.key');
+    $secret = config('broadcasting.connections.pusher.secret');
+    $socketId = $request->input('socket_id');
+    $chatId = $request->input('chat_id');
+    $channelName = 'private-Chat.' . $chatId;
+
+    $stringToSign = $socketId . ':' . $channelName;
+    $authSignature = hash_hmac('sha256', $stringToSign, $secret);
+    $auth = $authKey . ':' . $authSignature;
+
+    return response()->json(['auth' => $auth]);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

@@ -5,9 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Models\Chat;
 use App\Models\Prompt;
 use GuzzleHttp\Client;
+use App\Models\Response;
 use Illuminate\Http\Request;
 use App\Events\PromptCreated;
+use App\Events\ResponseCreated;
+use App\Events\StreamBroadcast;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PromptController
 {
@@ -46,21 +51,58 @@ class PromptController
 
         $prompt = Prompt::create($request->all());
 
-        $response = $this->sendPromptToLangChain($prompt->prompt_content);
-
         $this->SendPrompt($prompt);
 
-        return response()->json([
-            'status' => 1,
-            'message' => 'Prompt Created Successfully',
-            'data' => $prompt,
-            'response' => $response
-        ], 201);
+        $chatbotUrl = env('CHATBOT_API_URL');
+
+        $userMessage = $request->input('prompt_content');
+        $conversationId = $request->chat_id;
+
+        if ($chatbotUrl) {
+            $response = Http::post($chatbotUrl . '/chat/get-response', [
+                'message' => $userMessage,
+            ]);
+
+            $responseData = $response->json();
+
+        // Save and broadcast the response
+        $fullResponse = $responseData['response'];
+        $newResponse = Response::create([
+            'chat_id' => $request->chat_id,
+            'prompt_id' => $prompt->id,
+            'response_content' => $fullResponse,
+            'response_status' => null, // Default value, can be updated later
+        ]);
+
+        $this->SendResponse($newResponse);
+
+
+
+
+
+
+            // $responseData = $response->json();
+            // $fullResponse = $responseData['response'];
+
+            // foreach (str_split($fullResponse) as $letter) {
+            //     broadcast(new StreamBroadcast($letter));
+            //     usleep(10); // 10 milliseconds delay
+            // }
+        }
+
+        return response()->json(['status' => 'Message broadcasted']);
+
     }
+
 
     private function SendPrompt(Prompt $prompt){
         $chat_id = $prompt->chat_id;
         broadcast(new PromptCreated($prompt));
+    }
+
+    private function SendResponse(Response $response){
+        $chat_id = $response->chat_id;
+        broadcast(new ResponseCreated($response));
     }
 
     /**
@@ -118,3 +160,42 @@ class PromptController
     }
 
 }
+
+
+
+        //$generatedResponseContent = $this->sendPromptToLangChain($prompt->prompt_content);
+
+        // $response = $chat->responses()->create([
+        //     'prompt_id' => $prompt->id,
+        //     'response_content' => $generatedResponseContent,
+        //     'response_status' => null, // Default value, can be updated later
+        // ]);
+
+
+/*
+        $response = new StreamedResponse(function () use ($prompt, $chat) {
+            // Start the streaming response
+            $generatedResponseContent = $this->sendPromptToLangChain($prompt->prompt_content);
+            $response = $chat->responses()->create([
+                'prompt_id' => $prompt->id,
+                'response_content' => $generatedResponseContent,
+                'response_status' => null, // Default value, can be updated later
+            ]);
+
+
+            $this->SendPrompt($prompt);
+            echo json_encode([
+                'status' => 1,
+                'message' => 'Prompt Created Successfully',
+                'data' => $prompt,
+                'response' => $response
+            ]);
+            // Flush the output buffer to send the current chunk to the client
+            flush();
+        });
+
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
+*/
+        // $this->SendResponse($response);
