@@ -10,8 +10,10 @@ use Illuminate\Http\Request;
 use App\Events\PromptCreated;
 use App\Events\ResponseCreated;
 use App\Events\StreamBroadcast;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PromptController
@@ -59,9 +61,11 @@ class PromptController
         $conversationId = $request->chat_id;
 
         if ($chatbotUrl) {
-            $response = Http::post($chatbotUrl . '/chat/get-response', [
-                'message' => $userMessage,
+            $response = Http::withOptions(['verify' => false])->asForm()->post($chatbotUrl . '/chat/get-response', [
+                'question' => $userMessage,
+                'conversation_id' => (string) $conversationId
             ]);
+
 
             $responseData = $response->json();
 
@@ -76,22 +80,94 @@ class PromptController
 
         $this->SendResponse($newResponse);
 
+        $titleResponse = Http::withOptions(['verify' => false])->post($chatbotUrl . '/chat/generate-title', [
+            'message' => $userMessage,
+        ]);
 
+        $titleData = $titleResponse->json();
+        $generatedTitle = $titleData['title'] ?? 'Chat'; // Fallback to 'Chat' if no title is generated
 
+        // Update the chat title
+        $chat->update([
+            'chat_title' => $generatedTitle,
+        ]);
 
-
-
-            // $responseData = $response->json();
-            // $fullResponse = $responseData['response'];
-
-            // foreach (str_split($fullResponse) as $letter) {
-            //     broadcast(new StreamBroadcast($letter));
-            //     usleep(10); // 10 milliseconds delay
-            // }
         }
 
         return response()->json(['status' => 'Message broadcasted']);
 
+    }
+
+    public function streamResponse()
+    {
+        $chatbotUrl = env('CHATBOT_API_URL');
+
+        if ($chatbotUrl) {
+            $response = new StreamedResponse(function () use ($chatbotUrl) {
+                // Output buffering settings
+                ob_implicit_flush(true);
+                ob_end_flush();
+
+                $stream = Http::withOptions(['verify' => false])
+                              ->asForm()
+                              ->get($chatbotUrl . '/chat/stream-response');
+
+                Log::info('Stream response status: ' . $stream->status());
+                Log::info('Stream response body: ' . $stream->body());
+
+                if ($stream->successful()) {
+                    $body = $stream->getBody();
+
+                    // Stream the data
+                    while (!$body->eof()) {
+                        $chunk = $body->read(1024); // Reading the stream in chunks of 1024 bytes
+                        echo $chunk;
+                        flush();
+                    }
+                } else {
+                    echo "Error streaming response.";
+                    flush();
+                }
+            });
+
+            $response->headers->set('Content-Type', 'text/plain');
+            $response->headers->set('Cache-Control', 'no-cache');
+            $response->headers->set('Connection', 'keep-alive');
+
+            return $response;
+        }
+
+        return response()->json(['status' => 'Chatbot URL not configured']);
+    }
+
+    public function streamResponseTest()
+    {
+        $response = new StreamedResponse(function () {
+            // Output buffering settings
+            ob_implicit_flush(true);
+            ob_end_flush();
+
+            // Stream data
+            echo "Streaming started...\n";
+            flush();
+
+            sleep(0); // Simulate delay
+
+            echo "Streaming continues...\n";
+            flush();
+
+            sleep(0); // Simulate more delay
+
+            echo "Streaming ended.";
+            flush();
+        });
+
+        // Set headers for streaming
+        $response->headers->set('Content-Type', 'text/plain');
+        $response->headers->set('Cache-Control', 'no-cache');
+        $response->headers->set('Connection', 'keep-alive');
+
+        return $response;
     }
 
 

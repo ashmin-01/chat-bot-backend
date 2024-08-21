@@ -11,10 +11,16 @@ class ResponseController
     /**
      * Display a listing of the resource.
      */
-    public function index() // problem
+    public function BadResponses() // problem
     {
-        $responses = Response::with(['chat', 'prompt', 'feedback'])->get(); // eager loading method
-        return response()->json($responses);
+        // Fetch responses with 'Dislike' status and eager load related models
+        $responses = Response::with(['prompt', 'feedback'])
+                             ->where('response_status', 'Dislike')
+                             ->get();
+
+        // Return the view with the fetched data
+
+        return view('home.tables', ['responses' => $responses]);
     }
 
     /**

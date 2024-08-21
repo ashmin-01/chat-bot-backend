@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Laravel\Sanctum\Sanctum;
 use App\Events\ResponseCreated;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Broadcast;
@@ -31,6 +32,8 @@ Route::get('/broadcast-basic-event', function () {
     return 'Basic event broadcasted!';
 });
 */
+
+Route::get('/streaming', [PromptController::class, 'streamResponse']);
 
 Route::post('/broadcasting/auth', function (Request $request) {
     $authKey = config('broadcasting.connections.pusher.key');
@@ -64,6 +67,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     });
+
+
 
     // Prompt Routes
     Route::prefix('prompts')->group(function () { //done

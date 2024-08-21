@@ -44,7 +44,9 @@ return [
                 'useTLS' => true,
             ],
             'client_options' => [
-                // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
+                // Minimal Guzzle configuration
+                'timeout' => 5, // Set a short timeout
+                'verify' => false, // Disable SSL verification for development
             ],
         ],
 

@@ -14,25 +14,27 @@ class StreamBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * Create a new event instance.
-     */
+    public $response_content;
 
-     public $letter;
+    public function __construct(array $data)
+    {
+        $this->response_content = $data['response_content'];
+    }
 
-     public function __construct($letter)
-     {
-         $this->letter = $letter;
-     }
+    public function broadcastOn()
+    {
+        return new PrivateChannel('privat-chat.1');
+    }
 
-     public function broadcastOn()
-     {
-         return new Channel('letters'); // Public channel for simplicity
-     }
+    public function broadcastAs()
+    {
+        return 'stream.sent';
+    }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
+    public function broadcastWith()
+    {
+        return [
+            'response_content' => $this->response_content,
+        ];
+    }
 }

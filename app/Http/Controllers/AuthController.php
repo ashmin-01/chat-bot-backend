@@ -45,21 +45,19 @@ class AuthController extends Controller
             201);
     }
 
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $fields = $request->validate([
             'mobile_number' => 'required|string',
             'password' => 'required|string'
         ]);
 
-        $user = user::where('mobile_number' , $fields['mobile_number'])->first();
+        $user = User::where('mobile_number', $fields['mobile_number'])->first();
 
-        //check password
-        if(!$user || !Hash::check($fields['password'] , $user->password)){
-            return response([
-                'message' => 'Wrong password'
-            ] , 401);
-
+        if (!$user || !Hash::check($fields['password'], $user->password)) {
+            return response()->json(['message' => 'Wrong password'], 401);
         }
+
         $token = $user->createToken('myapptoken')->plainTextToken;
 
         $response = [
@@ -68,7 +66,7 @@ class AuthController extends Controller
             'message' => 'User Logged in Successfully!'
         ];
 
-        return response($response , 201);
+        return response()->json($response, 201);
     }
 
     public function logout(Request $request){
@@ -79,4 +77,116 @@ class AuthController extends Controller
             'message' => 'Logged Out'
         ],200);
     }
+
+
+
+
+
+
+    //================= Dashboard ========================
+
+
+
+    public function showLoginForm()
+    {
+        // Message displayed on the login form, can be adjusted as needed
+        $msg = "Welcome!";
+
+        // Create a form object with fields
+        $form = new \stdClass();
+
+        // Update the field name to 'mobile_number' instead of 'username'
+        $form->mobile_number = '<input type="text" name="mobile_number" class="form-control" required>';
+        $form->password = '<input type="password" name="password" class="form-control" required>';
+
+        // Return the view with the form and message variables
+        return view('accounts.login', compact('msg', 'form'));
+    }
+
+
+    public function loginAdmin(Request $request)
+    {
+        $fields = $request->validate([
+            'mobile_number' => 'required|string',
+            'password' => 'required|string'
+        ]);
+
+        $user = User::where('mobile_number', $fields['mobile_number'])->first();
+
+        if ($user->id != 1 ) {
+            return response()->json(['message' => 'you are not allowed'], 401);
+        }
+
+        if (!$user || !Hash::check($fields['password'], $user->password) ) {
+            return response()->json(['message' => 'Wrong password'], 401);
+        }
+
+        $token = $user->createToken('myapptoken')->plainTextToken;
+
+        $response = [
+            'user' => $user,
+            'token' => $token,
+            'message' => 'User Logged in Successfully!'
+        ];
+
+        return view('home.index');
+    }
+
+
+
+    public function showRegisterForm()
+    {
+        $msg = null;  // Default value for the message
+        $success = false;  // Default value for the success variable
+
+        // Initialize the form fields with their HTML and error messages
+        $form = new \stdClass();
+        $form->username = (object)[
+            'input' => '<input type="text" name="username" class="form-control" value="' . old('username') . '" required>',
+            'errors' => session('errors') ? session('errors')->get('username') : null
+        ];
+        $form->email = (object)[
+            'input' => '<input type="email" name="email" class="form-control" value="' . old('email') . '" required>',
+            'errors' => session('errors') ? session('errors')->get('email') : null
+        ];
+        $form->password1 = (object)[
+            'input' => '<input type="password" name="password" class="form-control" required>',
+            'errors' => session('errors') ? session('errors')->get('password') : null
+        ];
+        $form->password2 = (object)[
+            'input' => '<input type="password" name="password_confirmation" class="form-control" required>',
+            'errors' => session('errors') ? session('errors')->get('password_confirmation') : null
+        ];
+
+        return view('accounts.register', compact('msg', 'form', 'success'));
+    }
+
+public function handleRegister(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('register')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $user = User::create([
+            'name' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $msg = "Registration successful!";
+        $success = true;
+
+        return view('accounts.register', compact('msg', 'success'));
+    }
+
+
+
 }

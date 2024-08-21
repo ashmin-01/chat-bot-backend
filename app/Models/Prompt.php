@@ -33,4 +33,14 @@ class Prompt extends Model
         return $this->hasMany(Response::class);
     }
 
+    public function toArray()
+    {
+        $array = parent::toArray();
+
+        // Ensure the prompt_content is handled correctly
+        $array['prompt_content'] = $this->prompt_content;
+
+        return $array;
+    }
+
 }

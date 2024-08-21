@@ -15,12 +15,14 @@ class PromptCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    private Prompt $prompt;
+
     /**
      * Create a new event instance.
      */
-    public function __construct(private Prompt $prompt)
+    public function __construct(Prompt $prompt)
     {
-        //
+        $this->prompt = $prompt;
     }
 
     /**
@@ -40,9 +42,12 @@ class PromptCreated implements ShouldBroadcast
 
     public function broadcastWith()
     {
-        return [
-            'chat_id' => $this->prompt->chat_id ,
+        // Encode the data to JSON with unescaped Unicode and then decode it back to an array
+        $data = [
+            'chat_id' => $this->prompt->chat_id,
             'prompt' => $this->prompt->toArray(),
         ];
+
+        return json_decode(json_encode($data, JSON_UNESCAPED_UNICODE), true);
     }
 }
