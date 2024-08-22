@@ -32,7 +32,7 @@
             <li class="{{ request()->is('icons') ? 'active' : '' }}">
                 <a href="{{ url('/icons') }}">
                     <i class="tim-icons icon-atom"></i>
-                    <p>APIs</p>
+                    <p>MODEL CONFIGURATIONS</p>
                 </a>
             </li>
 
@@ -40,15 +40,15 @@
             <li class="{{ request()->is('map') ? 'active' : '' }}">
                 <a href="{{ url('/map') }}">
                     <i class="tim-icons icon-pin"></i>
-                    <p>Variables</p>
+                    <p>PROMPT TEMPLATE</p>
                 </a>
             </li>
 
-            <!-- User Profile -->
+            <!-- UPLOAD FILES -->
             <li class="{{ request()->is('user') ? 'active' : '' }}">
                 <a href="{{ url('/user') }}">
                     <i class="tim-icons icon-single-02"></i>
-                    <p>User Profile</p>
+                    <p>UPLOAD FILES</p>
                 </a>
             </li>
 
@@ -62,10 +62,13 @@
 
             <!-- Logout -->
             <li>
-                <a href="{{ route('logout') }}">
+                <a href="javascript:void(0);" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="tim-icons icon-button-power"></i>
                     <p>Logout</p>
                 </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
             </li>
         </ul>
     </div>

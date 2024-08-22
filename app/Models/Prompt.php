@@ -12,7 +12,7 @@ class Prompt extends Model
     use HasFactory;
 
     protected $fillable = [
-        'chat_id' , 'prompt_content' , "archived"
+        'chat_id' , 'prompt_content'
     ];
 
      /**

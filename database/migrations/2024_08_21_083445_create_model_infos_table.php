@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prompts', function (Blueprint $table) {
+        Schema::create('model_infos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('chat_id')->constrianed('chats')->cascadeOnDelete();
-            $table->text('prompt_content');
+            $table->text('embedding_model_name');
+            $table->text('hugging_api_key');
+            $table->text('weaviate_cluster_URL');
+            $table->text('weaviate_api_key');
+            $table->text('weaviate_collection_name');
             $table->timestamps();
         });
     }
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('prompts');
+        Schema::dropIfExists('model_infos');
     }
 };

@@ -2,7 +2,6 @@
 
 @section('title', 'File Dashboard')
 
-<!-- Specific Page CSS goes HERE  -->
 @section('stylesheets')
 <style>
   .file-card {
@@ -18,12 +17,12 @@
     margin-top: 20px;
     margin-bottom: 20px;
   }
-  .file-list a {
+  .file-list span {
     color: #007bff;
-    text-decoration: none;
   }
-  .file-list a:hover {
+  .file-list span:hover {
     text-decoration: underline;
+    cursor: pointer;
   }
   .delete-button {
     color: #dc3545;
@@ -66,14 +65,13 @@
 
           <!-- List of Files -->
           <div class="file-list" id="fileList">
-            <!-- Dynamically generated file list items will go here -->
+            @foreach($files as $file)
+            <div class="file-card">
+              <span>{{ $file['name'] }}</span>
+              <span class="delete-button" onclick="deleteFile('{{ $file['name'] }}')">Delete</span>
+            </div>
+            @endforeach
           </div>
-
-          <!-- Add File Button -->
-          <button class="btn btn-primary" onclick="document.getElementById('fileInput').click();">
-            Add File
-          </button>
-          <input type="file" id="fileInput" style="display: none;" onchange="handleFileUpload(event)" accept=".json, .html">
         </div>
       </div>
     </div>
@@ -85,88 +83,112 @@
   const searchPropertyInput = document.getElementById('searchProperty');
   const searchValueInput = document.getElementById('searchValue');
   const warningMessage = document.getElementById('warningMessage');
-  let files = [];
-
-  function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (file) {
-      files.push(file);
-      displayFile(file);
-    }
-  }
-
-  function displayFile(file) {
-    const fileCard = document.createElement('div');
-    fileCard.className = 'file-card';
-
-    const fileLink = document.createElement('a');
-    fileLink.href = '#';
-    fileLink.textContent = file.name;
-    fileLink.onclick = () => openFile(file);
-
-    const deleteButton = document.createElement('span');
-    deleteButton.className = 'delete-button';
-    deleteButton.textContent = 'Delete';
-    deleteButton.onclick = () => deleteFile(file, fileCard);
-
-    fileCard.appendChild(fileLink);
-    fileCard.appendChild(deleteButton);
-    fileCard.dataset.name = file.name; // Storing file name as a dataset property
-    fileList.appendChild(fileCard);
-  }
-
-  function openFile(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const newWindow = window.open('', '_blank');
-      newWindow.document.write(e.target.result);
-      newWindow.document.close();
-    };
-    reader.readAsText(file);
-  }
-
-  function deleteFile(file, fileCard) {
-    files = files.filter(f => f !== file);
-    fileList.removeChild(fileCard);
-  }
 
   function applySearch() {
     const property = searchPropertyInput.value.trim().toLowerCase();
     const value = searchValueInput.value.trim().toLowerCase();
 
     if (!property || !value) {
-      warningMessage.style.display = 'inline';
-      return;
+        warningMessage.style.display = 'inline';
+        return;
     }
 
     warningMessage.style.display = 'none';
 
-    const fileCards = fileList.getElementsByClassName('file-card');
+    // Send search request to Laravel controller
+    fetch('/search-documents', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            property: property,
+            metadata_filter: value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Search failed: ' + data.error);
+            return;
+        }
 
-    for (let card of fileCards) {
-      const fileProperty = card.dataset[property];
-      if (fileProperty && fileProperty.toLowerCase().includes(value)) {
-        card.style.display = 'flex';
-      } else {
-        card.style.display = 'none';
-      }
-    }
-  }
+        // Clear the current file list
+        fileList.innerHTML = '';
+
+        // Display the search results
+        data.forEach(result => {
+            const fileCard = document.createElement('div');
+            fileCard.className = 'file-card';
+
+            const fileName = document.createElement('span');
+            fileName.textContent = result.name; // Display the file name
+
+            const deleteButton = document.createElement('span');
+            deleteButton.className = 'delete-button';
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = () => deleteFile(result.name); // Handle deletion
+
+            fileCard.appendChild(fileName);
+            fileCard.appendChild(deleteButton);
+            fileList.appendChild(fileCard);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
 
   function resetSearch() {
     searchPropertyInput.value = '';
     searchValueInput.value = '';
     warningMessage.style.display = 'none';
 
-    const fileCards = fileList.getElementsByClassName('file-card');
-
-    for (let card of fileCards) {
-      card.style.display = 'flex';
-    }
+    // Clear the file list or reset the search results
+    // You might want to re-fetch all files if needed
   }
+
+  function deleteFile(fileName) {
+    // Find the file card to delete
+    const fileCard = Array.from(fileList.getElementsByClassName('file-card'))
+        .find(card => card.querySelector('span').textContent === fileName);
+
+    if (fileCard) {
+        // Extract the property and metadata filter
+        const property = 'name'; // or however you determine the property
+        const metadataFilter = fileName; // Assuming the fileName is the metadata filter
+
+        // Send the delete request to the Laravel controller
+        fetch('/delete-file', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                fileName: fileName,
+                property: property,
+                metadataFilter: metadataFilter
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the file card from the UI
+                fileList.removeChild(fileCard);
+                alert('File deleted successfully.');
+            } else {
+                alert('Failed to delete file: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
 </script>
 @endsection
 
-<!-- Specific Page JS goes HERE  -->
 @section('javascripts')
 @endsection

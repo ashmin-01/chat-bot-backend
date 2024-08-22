@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('chat_id')->constrianed('chats')->cascadeOnDelete();
             $table->foreignId('prompt_id')->constrianed('prompts');
+            $table->boolean('archived')->default(false);
             $table->text('response_content');
             $table->enum('response_status', ['Like', 'Dislike'])->nullable();
             $table->timestamps();

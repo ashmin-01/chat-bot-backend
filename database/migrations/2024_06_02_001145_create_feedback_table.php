@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('response_id')->constrained('responses');
             $table->enum('feedback_type', ['dislike' , 'regenerate']);
             $table->text('context')->nullable();
-            $table->enum('regenerate_review' , ['Better' , 'Worse' , 'Same']);
+            $table->enum('regenerate_review' , ['Better' , 'Worse' , 'Same'])->nullable();
             $table->timestamps();
         });
     }

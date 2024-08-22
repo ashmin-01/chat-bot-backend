@@ -52,10 +52,7 @@
                             <button type="submit" name="login" class="btn btn-fill btn-primary">Login</button>
 
                             <br /><br />
-
-                            <p>
-                                Don't have an account? <a href="{{ route('register.form') }}" class="text-primary">Register</a>
-                            </p>
+                            <!-- Removed Register link section -->
                         </div>
                     </form>
 

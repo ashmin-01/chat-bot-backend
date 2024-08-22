@@ -61,7 +61,7 @@ class PromptController
         $conversationId = $request->chat_id;
 
         if ($chatbotUrl) {
-            $response = Http::withOptions(['verify' => false])->asForm()->post($chatbotUrl . '/chat/get-response', [
+            $response = Http::timeout(100)->withOptions(['verify' => false])->asForm()->post($chatbotUrl . '/chat/get-response', [
                 'question' => $userMessage,
                 'conversation_id' => (string) $conversationId
             ]);

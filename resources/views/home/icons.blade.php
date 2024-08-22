@@ -12,65 +12,66 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="title">model Information</h5>
+                    <h5 class="title">Model Information</h5>
                 </div>
                 <div class="card-body">
-                    <form>
+                    <form method="POST" action="{{ route('dashboard.configure') }}">
+                        @csrf
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Hhgging face api key</label>
-                                    <input type="text" class="form-control" placeholder="Enter information" id="field1" disabled>
+                                    <label>Hugging Face API Key</label>
+                                    <input type="text" name="hugging_api_key" class="form-control" placeholder="Enter information" id="field1" disabled>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Groq api key</label>
-                                    <input type="text" class="form-control" placeholder="Enter information" id="field2" disabled>
+                                    <label>Groq API Key</label>
+                                    <input type="text" name="groq_api_key" class="form-control" placeholder="Enter information" id="field2" disabled>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Coher api key</label>
-                                    <input type="text" class="form-control" placeholder="Enter information" id="field3" disabled>
+                                    <label>Coher API Key</label>
+                                    <input type="text" name="coher_api_key" class="form-control" placeholder="Enter information" id="field3" disabled>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Weaviate api key</label>
-                                    <input type="text" class="form-control" placeholder="Enter information" id="field4" disabled>
+                                    <label>Weaviate API Key</label>
+                                    <input type="text" name="weaviate_api_key" class="form-control" placeholder="Enter information" id="field4" disabled>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Weaviate cluster url</label>
-                                    <input type="text" class="form-control" placeholder="Enter information" id="field5" disabled>
+                                    <label>Weaviate Cluster URL</label>
+                                    <input type="text" name="weaviate_cluster_url" class="form-control" placeholder="Enter information" id="field5" disabled>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Weaviate collection name</label>
-                                    <input type="text" class="form-control" placeholder="Enter information" id="field6" disabled>
+                                    <label>Weaviate Collection Name</label>
+                                    <input type="text" name="weaviate_collection_name" class="form-control" placeholder="Enter information" id="field6" disabled>
                                 </div>
                             </div>
                         </div>
                         <div class="row justify-content-center">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Embedding model name</label>
-                                    <input type="text" class="form-control" placeholder="Enter information" id="field7" disabled>
+                                    <label>Embedding Model Name</label>
+                                    <input type="text" name="embedding_model_name" class="form-control" placeholder="Enter information" id="field7" disabled>
                                 </div>
                             </div>
                         </div>
+                        <div class="card-footer">
+                            <button type="button" class="btn btn-outline-primary" id="editButton">Edit</button>
+                            <button type="submit" class="btn btn-danger" id="saveButton" disabled>Save</button>
+                        </div>
                     </form>
-                </div>
-                <div class="card-footer">
-                    <button type="button" class="btn btn-outline-primary" id="editButton">Edit</button>
-                    <button type="submit" class="btn btn-danger" id="saveButton" disabled>Save</button>
                 </div>
             </div>
         </div>
@@ -90,11 +91,7 @@
 
     document.getElementById('saveButton').addEventListener('click', function(event) {
         event.preventDefault();
-        const fields = document.querySelectorAll('.form-control');
-        fields.forEach(field => field.disabled = true);
-        document.getElementById('saveButton').disabled = true;
-        document.getElementById('editButton').classList.remove('btn-fill');
-        alert('Information saved successfully!');
+        document.querySelector('form').submit();  // Submit the form programmatically
     });
 </script>
 @endsection

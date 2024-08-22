@@ -108,28 +108,23 @@ class AuthController extends Controller
     {
         $fields = $request->validate([
             'mobile_number' => 'required|string',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
 
         $user = User::where('mobile_number', $fields['mobile_number'])->first();
 
-        if ($user->id != 1 ) {
-            return response()->json(['message' => 'you are not allowed'], 401);
+        if (!$user || !Hash::check($fields['password'], $user->password)) {
+            return redirect()->back()->withErrors(['message' => 'Wrong mobile number or password']);
         }
 
-        if (!$user || !Hash::check($fields['password'], $user->password) ) {
-            return response()->json(['message' => 'Wrong password'], 401);
+        if ($user->id != 1) {
+            return redirect()->back()->withErrors(['message' => 'You are not allowed to access this dashboard']);
         }
 
-        $token = $user->createToken('myapptoken')->plainTextToken;
+        // Log in the user using session-based authentication
+        Auth::login($user);
 
-        $response = [
-            'user' => $user,
-            'token' => $token,
-            'message' => 'User Logged in Successfully!'
-        ];
-
-        return view('home.index');
+        return redirect()->route('dashboard');
     }
 
 
@@ -185,6 +180,17 @@ public function handleRegister(Request $request)
         $success = true;
 
         return view('accounts.register', compact('msg', 'success'));
+    }
+
+
+    public function logout_admin(Request $request)
+    {
+        // Invalidate the current session and log out the user
+        Auth::logout();
+
+
+        // Redirect the user to the home page or login page
+        return redirect()->route('login');
     }
 
 

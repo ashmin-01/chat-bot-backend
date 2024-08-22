@@ -27,6 +27,7 @@
 @section('content')
 <div class="content">
   <div class="row">
+    @isset($badResponses)
     <div class="col-md-12">
       <div class="card">
         <div class="card-header">
@@ -42,11 +43,11 @@
               </tr>
             </thead>
             <tbody>
-              @forelse($responses as $response)
+              @forelse($badResponses as $response)
                 <tr>
                   <td>{{ $response->prompt->prompt_content }}</td>
                   <td>{{ $response->response_content }}</td>
-                  <td>{{ $response->feedback->feedback_content }}</td>
+                  <td>{{ $response->feedback->context }}</td>
                 </tr>
               @empty
                 <tr>
@@ -58,6 +59,9 @@
         </div>
       </div>
     </div>
+    @endisset
+
+    @isset($regeneratedFeedbacks)
     <div class="col-md-12 mt-4">
       <div class="card">
         <div class="card-header">
@@ -74,28 +78,31 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Example rows for demonstration, replace with actual data if available -->
-              <tr>
-                <td>What is the USSD code for the Shabablink plan?</td>
-                <td>Hi there! For the Shabablink plan, you can use the USSD code *555#. Is there anything else I can help you with today?</td>
-                <td>Thank you for the feedback. For the Shabablink plan, please dial *556# for a faster response.</td>
-                <td>The answering process wasn't smooth and fast.</td>
-              </tr>
-              <tr>
-                <td>What is the USSD code for the Shabablink plan?</td>
-                <td>Hi there! For the Shabablink plan, you can use the USSD code *555#. Is there anything else I can help you with today?</td>
-                <td>We've streamlined our process. Please try *556# for an instant reply.</td>
-                <td>The website layout is a bit confusing.</td>
-              </tr>
-              <!-- Add more rows if necessary -->
+              @forelse($regeneratedFeedbacks as $feedback)
+                @php
+                  // Get the new response
+                  $newResponse = $feedback->response;
+
+                  // Get the old (archived) response related to the same prompt
+                  $oldResponse = $newResponse->prompt->responses->firstWhere('archived', true);
+                @endphp
+                <tr>
+                  <td>{{ $newResponse->prompt->prompt_content }}</td>
+                  <td>{{ $oldResponse->response_content ?? 'N/A' }}</td>
+                  <td>{{ $newResponse->response_content }}</td>
+                  <td>{{ $feedback->regenerate_review }}</td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="4">No regenerated responses found.</td>
+                </tr>
+              @endforelse
             </tbody>
           </table>
         </div>
       </div>
     </div>
+    @endisset
   </div>
 </div>
-@endsection
-
-@section('javascripts')
 @endsection

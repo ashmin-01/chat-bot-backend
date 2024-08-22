@@ -75,7 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{chat_id}', [PromptController::class, 'index']);
         Route::post('/Ask_question', [PromptController::class, 'store']);
         Route::get('/{prompt}', [PromptController::class, 'show']);
-        Route::put('/{prompt_id}', [PromptController::class, 'upxdate']);
+        Route::put('/{prompt_id}', [PromptController::class, 'update']);
     });
 
     // Response Routes
@@ -83,7 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [ResponseController::class, 'index']);
         Route::post('/', [ResponseController::class, 'store']);
         Route::get('/{response}', [ResponseController::class, 'show']);
-        Route::put('/{response}', [ResponseController::class, 'update']);
+        Route::put('/regenerate/{response_id}', [ResponseController::class, 'regenrate']);
         Route::put('/{response}', [ResponseController::class, 'toggleLikeDislike']);
     });
 
@@ -91,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('feedbacks')->group(function () {
         Route::get('/', [FeedbackController::class, 'index']);
         Route::post('/', [FeedbackController::class, 'store']);
+        Route::post('/regenrated', [FeedbackController::class, 'review']);
     });
 
 });

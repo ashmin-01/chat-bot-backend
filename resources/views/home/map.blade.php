@@ -62,9 +62,6 @@ body {
     background-color: var(--textarea-bg-color);
     color: var(--text-color);
 }
-.textarea-content[readonly] {
-    cursor: not-allowed;
-}
 
 .edit-save-buttons {
     margin-top: 10px;
@@ -100,7 +97,7 @@ body {
         </div>
         <div class="card-body">
           <div class="textarea-container">
-            <textarea id="prompt-template" class="textarea-content" readonly>
+            <textarea id="prompt-template" name="prompt_template" class="textarea-content">
 تصرف كأنك موظف خدمة عملاء.
 أجب باللغة العربية فقط.
 قم بفهم السياقات التالية ثم بقم بالاجابة على الأسئلة.
@@ -117,8 +114,7 @@ body {
           </div>
         </div>
         <div class="card-footer">
-          <button id="edit-btn" class="btn btn-outline-primary">Edit</button>
-          <button id="save-btn" class="btn btn-danger" disabled>Save</button>
+          <button id="save-btn" class="btn btn-danger">Save</button>
         </div>
       </div>
     </div>
@@ -128,38 +124,36 @@ body {
 
 @section('javascripts')
 <script>
-  // Function to toggle between light and dark mode
-  function toggleMode() {
-    const body = document.body;
-    if (body.classList.contains('light-mode')) {
-      body.classList.remove('light-mode');
-      body.classList.add('dark-mode');
-    } else {
-      body.classList.remove('dark-mode');
-      body.classList.add('light-mode');
-    }
-  }
-
-  // Event listeners for buttons
-  document.getElementById('edit-btn').addEventListener('click', function() {
-    const textarea = document.getElementById('prompt-template');
-    textarea.removeAttribute('readonly');
-    textarea.focus();
-    document.getElementById('edit-btn').disabled = true;
-    document.getElementById('save-btn').disabled = false;
-    document.getElementById('edit-btn').classList.add('btn-fill');
-  });
-
   document.getElementById('save-btn').addEventListener('click', function() {
     const textarea = document.getElementById('prompt-template');
-    textarea.setAttribute('readonly', true);
-    document.getElementById('edit-btn').disabled = false;
-    document.getElementById('save-btn').disabled = true;
-    document.getElementById('edit-btn').classList.remove('btn-fill');
+    const updatedContent = textarea.value.trim();
 
-    // Example: Send the updatedContent to the server using an AJAX call
-    const updatedContent = textarea.value;
-    console.log('Saving content:', updatedContent);
-  });
+    fetch('{{ route("dashboard.update_template") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ prompt_template: updatedContent })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();  // Attempt to parse JSON
+    })
+    .then(data => {
+        console.log('Response data:', data);  // Log the response data
+        if (data.status === 'success') {
+            alert('Prompt template saved successfully.');
+        } else {
+            alert('Failed to save prompt template: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving.');
+    });
+});
 </script>
 @endsection
