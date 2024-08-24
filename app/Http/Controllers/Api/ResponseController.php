@@ -136,7 +136,8 @@ class ResponseController
             // Send the prompt data to the chatbot API
             $response = Http::timeout(120)->withOptions(['verify' => false])->asForm()->post($chatbotUrl . '/chat/get-response', [
                 'question' => $userMessage,
-                'conversation_id' => (string) $conversationId
+                'conversation_id' => (string) $conversationId,
+                'is_en' => false,  // Set this based on your needs
             ]);
 
             $responseData = $response->json();

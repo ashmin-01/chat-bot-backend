@@ -23,16 +23,6 @@ $chatbotUrl = env('CHATBOT_API_URL');
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-
-/*
-Route::get('/broadcast-basic-event', function () {
-    $basicEvent = new BasicEvent('Hello, world!');
-    event($basicEvent);
-    //broadcast(new ResponseCreated('Hello, world!'));
-    return 'Basic event broadcasted!';
-});
-*/
-
 Route::get('/streaming', [PromptController::class, 'streamResponse']);
 
 Route::post('/broadcasting/auth', function (Request $request) {
@@ -61,9 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/pin/{id}', [ChatController::class, 'pinning']);
         Route::delete('/delete/{chat}', [ChatController::class, 'destroy']);
         Route::get('/search', [ChatController::class, 'search']);
-        // new : voice message
         Route::post('/upload-voice-message', [ChatController::class, 'uploadVoiceMessage']);
-        // Route::post('/upload-voice-message', [ChatController::class, 'uploadVoiceMessage_with_transctipt']);
 
 
     });

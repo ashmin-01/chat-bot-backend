@@ -34,68 +34,94 @@ class PromptController
      */
     public function store(Request $request)
     {
+        // Log the incoming request data
+        Log::info('Store method called with data:', $request->all());
+
         $request->validate([
             'chat_id' => 'nullable|integer',
-            'prompt_content' => 'required|string|max:10000'
-
+            'prompt_content' => 'required|string|max:10000',
+            'is_en' => 'required|boolean'
         ]);
 
-        $chat = Chat::find($request->chat_id);
-        $user_id = Auth::user()->id;
+        try {
+            $chat = Chat::find($request->chat_id);
+            $user_id = Auth::user()->id;
+            Log::info('User ID: ' . $user_id);
 
-        if (!$chat) {
-            $chat = Chat::create([
-                'user_id'=>$user_id,
-                'chat_title'=>'new chat',
-                'isPinned'=>0,
-            ]);
+            if (!$chat) {
+                Log::info('Chat not found, creating a new chat.');
+                $chat = Chat::create([
+                    'user_id' => $user_id,
+                    'chat_title' => 'new chat',
+                    'isPinned' => 0,
+                ]);
+                Log::info('New chat created with ID: ' . $chat->id);
+            }
+
+            $prompt = Prompt::create($request->all());
+            Log::info('Prompt created with ID: ' . $prompt->id);
+
+            $this->SendPrompt($prompt);
+
+            $chatbotUrl = env('CHATBOT_API_URL');
+
+            $userMessage = $request->input('prompt_content');
+            $conversationId = $request->chat_id;
+
+            $is_english = $request->is_en;
+
+            if ($chatbotUrl) {
+                Log::info('Sending request to Chatbot API URL: ' . $chatbotUrl);
+
+                $response = Http::timeout(100)->withOptions(['verify' => false])->asForm()->post($chatbotUrl . '/chat/get-response', [
+                    'question' => $userMessage,
+                    'conversation_id' => (string) $conversationId,
+                    'is_en' => $is_english,  // Set this based on your needs
+                ]);
+                
+
+                Log::info('Chatbot API response received.');
+                $responseData = $response->json();
+
+                if (isset($responseData['response'])) {
+                    $fullResponse = $responseData['response'];
+                } else {
+                    Log::error('Expected "response" key not found in API response.', $responseData);
+                    return response()->json(['status' => 'Error occurred', 'message' => 'Invalid API response'], 500);
+                }
+                
+                $newResponse = Response::create([
+                    'chat_id' => $request->chat_id,
+                    'prompt_id' => $prompt->id,
+                    'response_content' => $fullResponse,
+                    'response_status' => null, // Default value, can be updated later
+                ]);
+                Log::info('Response saved with ID: ' . $newResponse->id);
+
+                $this->SendResponse($newResponse);
+
+                $titleResponse = Http::withOptions(['verify' => false])->post($chatbotUrl . '/chat/generate-title', [
+                    'message' => $userMessage,
+                ]);
+
+                Log::info('Title generation response received.');
+
+                $titleData = $titleResponse->json();
+                $generatedTitle = $titleData['title'] ?? 'Chat'; // Fallback to 'Chat' if no title is generated
+
+                // Update the chat title
+                $chat->update([
+                    'chat_title' => $generatedTitle,
+                ]);
+                Log::info('Chat title updated to: ' . $generatedTitle);
+            }
+
+            return response()->json(['status' => 'Message broadcasted']);
+        } catch (\Exception $e) {
+            // Log any exceptions that occur during the process
+            Log::error('Error in store method:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['status' => 'Error occurred', 'message' => $e->getMessage()], 500);
         }
-
-        $prompt = Prompt::create($request->all());
-
-        $this->SendPrompt($prompt);
-
-        $chatbotUrl = env('CHATBOT_API_URL');
-
-        $userMessage = $request->input('prompt_content');
-        $conversationId = $request->chat_id;
-
-        if ($chatbotUrl) {
-            $response = Http::timeout(100)->withOptions(['verify' => false])->asForm()->post($chatbotUrl . '/chat/get-response', [
-                'question' => $userMessage,
-                'conversation_id' => (string) $conversationId
-            ]);
-
-
-            $responseData = $response->json();
-
-        // Save and broadcast the response
-        $fullResponse = $responseData['response'];
-        $newResponse = Response::create([
-            'chat_id' => $request->chat_id,
-            'prompt_id' => $prompt->id,
-            'response_content' => $fullResponse,
-            'response_status' => null, // Default value, can be updated later
-        ]);
-
-        $this->SendResponse($newResponse);
-
-        $titleResponse = Http::withOptions(['verify' => false])->post($chatbotUrl . '/chat/generate-title', [
-            'message' => $userMessage,
-        ]);
-
-        $titleData = $titleResponse->json();
-        $generatedTitle = $titleData['title'] ?? 'Chat'; // Fallback to 'Chat' if no title is generated
-
-        // Update the chat title
-        $chat->update([
-            'chat_title' => $generatedTitle,
-        ]);
-
-        }
-
-        return response()->json(['status' => 'Message broadcasted']);
-
     }
 
     public function streamResponse()
@@ -140,35 +166,6 @@ class PromptController
         return response()->json(['status' => 'Chatbot URL not configured']);
     }
 
-    public function streamResponseTest()
-    {
-        $response = new StreamedResponse(function () {
-            // Output buffering settings
-            ob_implicit_flush(true);
-            ob_end_flush();
-
-            // Stream data
-            echo "Streaming started...\n";
-            flush();
-
-            sleep(0); // Simulate delay
-
-            echo "Streaming continues...\n";
-            flush();
-
-            sleep(0); // Simulate more delay
-
-            echo "Streaming ended.";
-            flush();
-        });
-
-        // Set headers for streaming
-        $response->headers->set('Content-Type', 'text/plain');
-        $response->headers->set('Cache-Control', 'no-cache');
-        $response->headers->set('Connection', 'keep-alive');
-
-        return $response;
-    }
 
 
     private function SendPrompt(Prompt $prompt){
@@ -216,62 +213,4 @@ class PromptController
         ], 201);
     }
 
-    private function sendPromptToLangChain($promptContent)
-    {
-        $client = new Client();
-        $apiUrl = 'http://localhost:8000/query'; // Ensure this matches your FastAPI endpoint
-
-        try {
-            $response = $client->post($apiUrl, [
-                'json' => [
-                    'question' => $promptContent,
-                ]
-            ]);
-
-            $responseBody = json_decode($response->getBody(), true);
-            return $responseBody['response'] ?? 'No response from LangChain API';
-        } catch (\Exception $e) {
-            return 'Error: ' . $e->getMessage();
-        }
-    }
-
 }
-
-
-
-        //$generatedResponseContent = $this->sendPromptToLangChain($prompt->prompt_content);
-
-        // $response = $chat->responses()->create([
-        //     'prompt_id' => $prompt->id,
-        //     'response_content' => $generatedResponseContent,
-        //     'response_status' => null, // Default value, can be updated later
-        // ]);
-
-
-/*
-        $response = new StreamedResponse(function () use ($prompt, $chat) {
-            // Start the streaming response
-            $generatedResponseContent = $this->sendPromptToLangChain($prompt->prompt_content);
-            $response = $chat->responses()->create([
-                'prompt_id' => $prompt->id,
-                'response_content' => $generatedResponseContent,
-                'response_status' => null, // Default value, can be updated later
-            ]);
-
-
-            $this->SendPrompt($prompt);
-            echo json_encode([
-                'status' => 1,
-                'message' => 'Prompt Created Successfully',
-                'data' => $prompt,
-                'response' => $response
-            ]);
-            // Flush the output buffer to send the current chunk to the client
-            flush();
-        });
-
-        $response->headers->set('Content-Type', 'application/json');
-
-        return $response;
-*/
-        // $this->SendResponse($response);

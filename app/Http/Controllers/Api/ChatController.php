@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Api\PromptController;
+use Illuminate\Support\Facades\Http;
 
 
 class ChatController
@@ -163,81 +165,73 @@ class ChatController
         return response()->json($result);
     }
 
-
-    // Endpoint for sending a voice message : TEST
     public function uploadVoiceMessage(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:mp3,wav,aac|max:10240',
-        ]);
-
-        $file = $request->file('file');
-        $filePath = $file->store('voice_messages');
-
-        $output = [];
-        $transcription = null;
-        $command = "python " . base_path('whisper_transcribe.py') . " " . storage_path('app/' . $filePath);
-
-        Log::info('Executing command: ' . $command);
-        exec($command, $output, $returnVar);
-        Log::info('Command output: ' . implode("\n", $output));
-        Log::info('Command return status: ' . $returnVar);
-
-        if (!empty($output)) {
-            $transcription = implode("\n", $output);
-        }
-
-        return response()->json(['file_path' => $filePath, 'transcription' => $transcription]);
-    }
-
-    // Endpoint for sending a voice message, stores the transcription and sends it as a prompt.
-    public function uploadVoiceMessage_with_transcript(Request $request)
-    {
+        // Log the start of the upload process
+        Log::info('UploadVoiceMessage method initiated', $request->all());
+    
         // Validate the incoming request
         $request->validate([
             'file' => 'required|mimes:mp3,wav,aac|max:10240',
-            'chat_id' => 'required|exists:chats,id', // Ensure chat_id is provided and valid
+            'chat_id' => 'required|exists:chats,id',
         ]);
-
-        // Store the uploaded file
+    
+        // Store the uploaded file temporarily
         $file = $request->file('file');
-        $filePath = $file->store('voice_messages');
-
-        // Call the Whisper Python script to transcribe the audio
-        $output = [];
-        $transcription = null;
-        $command = "python3 " . base_path('whisper_transcribe.py') . " " . storage_path('app/' . $filePath);
-        exec($command, $output);
-
-        if (!empty($output)) {
-            $transcription = implode("\n", $output);
-
-            // Define the transcriptions directory and file name
-            $transcriptionDirectory = base_path('transcriptions');
-            $transcriptionFileName = pathinfo($filePath, PATHINFO_FILENAME) . '.txt';
-
-            // Ensure the transcriptions directory exists
-            if (!file_exists($transcriptionDirectory)) {
-                mkdir($transcriptionDirectory, 0755, true);
+        $filePath = $file->store('temp_voice_messages');
+        Log::info('File stored successfully', ['filePath' => $filePath]);
+    
+        $chatbotUrl = env('CHATBOT_API_URL');
+        Log::info('Chatbot URL', ['url' => $chatbotUrl]);
+    
+        try {
+            Log::info('Sending file to FastAPI for transcription', ['filePath' => $filePath]);
+    
+            $response = Http::attach(
+                'file',
+                file_get_contents(storage_path('app/' . $filePath)),
+                $file->getClientOriginalName()
+            )->post($chatbotUrl . '/chat/audio-to-text');
+    
+            if ($response->successful()) {
+                $transcription = $response->json()['text'];
+                Log::info('Transcription received successfully', ['transcription' => $transcription]);
+    
+                // Create a new request object to mimic a store request
+                $storeRequest = new Request([
+                    'chat_id' => $request->chat_id,
+                    'prompt_content' => $transcription,
+                ]);
+    
+                // Create an instance of PromptController
+                $promptController = new PromptController();
+    
+                // Call the store method
+                $storeResponse = $promptController->store($storeRequest);
+    
+                Log::info('Store method called from UploadVoiceMessage', ['storeResponse' => $storeResponse]);
+    
+                return response()->json([
+                    'file_path' => $filePath,
+                    'transcription' => $transcription,
+                    'store_response' => $storeResponse->getData(), // Get data from store response
+                ]);
+            } else {
+                Log::error('Failed to transcribe audio', ['response' => $response->body()]);
+    
+                return response()->json([
+                    'error' => 'Failed to transcribe audio.',
+                    'details' => $response->body()
+                ], 500);
             }
-
-            // Save the transcription to the transcriptions directory
-            $transcriptionFilePath = $transcriptionDirectory . '/' . $transcriptionFileName;
-            file_put_contents($transcriptionFilePath, $transcription);
-
-            // Save the transcription as a prompt in the database
-            $prompt = new Prompt();
-            $prompt->chat_id = $request->chat_id;
-            $prompt->prompt_content = $transcription;
-            $prompt->save();
+        } catch (\Exception $e) {
+            Log::error('An error occurred while processing the voice message', ['exception' => $e->getMessage()]);
+    
+            return response()->json([
+                'error' => 'An error occurred while processing the voice message.',
+                'details' => $e->getMessage()
+            ], 500);
         }
-
-        return response()->json([
-            'file_path' => $filePath,
-            'transcription' => $transcription,
-            'transcription_file' => $transcriptionFilePath ?? null,
-            'prompt_id' => $prompt->id ?? null,
-        ]);
     }
 
 
