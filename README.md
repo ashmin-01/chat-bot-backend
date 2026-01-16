@@ -54,7 +54,7 @@ The backend serves as the core, integrating AI pipelines to generate responses, 
 ### Backend Setup
 ```bash
 git clone https://github.com/ashmin-01/chat-bot-backend.git
-cd syriatel-chatbot-backend
+cd chat-bot-backend
 pip install -r requirements.txt
 cp .env.example .env
 # configure database and AI API keys in .env
